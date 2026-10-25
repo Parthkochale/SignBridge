@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignBridge — Context-Aware Indian Sign Language Public-Service Assistant</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <meta name="description" content="Accessible, context-aware Indian Sign Language assistant for public service counters including Indian Railways, Hospitals, Police, and Citizen Desks.">
+</head>
+<body class="mode-kiosk">
+
+  <!-- Indian National Flag Top Accent Stripe -->
+  <div class="tricolor-stripe" aria-hidden="true"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header" role="banner">
+    <div class="brand-section">
+      <span class="brand-logo" aria-hidden="true">🇮🇳🧏‍♂️</span>
+      <div class="brand-text">
+        <h1>SignBridge <span style="font-size:0.75rem; font-weight:700; background:var(--bg-surface); padding:2px 8px; border-radius:4px; border:1px solid var(--border-color); color:var(--accent-primary);">ISL v2.0</span></h1>
+        <div class="brand-tagline">Context-Aware Indian Sign Language Public-Service Assistant</div>
+      </div>
+    </div>
+
+    <!-- Header Controls: Dual-device pairing, view mode, accessibility -->
+    <div class="header-controls">
+      <!-- Live Room Pairing Badge -->
+      <button id="sessionBadge" class="badge-room" onclick="SignBridgeApp.openRoomModal()" title="Dual-Device Pairing: Click to share or join room" aria-label="Room code for dual device sync">
+        <span class="pulse-dot"></span>
+        <span id="roomCodeText">Room: SB-INIT</span>
+        <span style="font-size:0.7rem; opacity:0.8;">(🔗 Pair)</span>
+      </button>
+
+      <!-- View Mode Selector -->
+      <div class="view-mode-toggle" role="group" aria-label="Device View Mode">
+        <button class="view-btn active" data-mode="kiosk" onclick="SignBridgeApp.setViewMode('kiosk')" title="Shared Kiosk Mode (Split Screen for counter tablet)">
+          👥 Kiosk Split
+        </button>
+        <button class="view-btn" data-mode="citizen" onclick="SignBridgeApp.setViewMode('citizen')" title="Citizen View (Large visual signs & camera)">
+          🧏‍♂️ Citizen View
+        </button>
+        <button class="view-btn" data-mode="officer" onclick="SignBridgeApp.setViewMode('officer')" title="Officer View (Counter microphone & controls)">
+          👔 Officer View
+        </button>
+      </div>
+
+      <!-- Accessibility Quick Controls -->
+      <button class="btn-ctrl btn-dict-nav" onclick="SignBridgeApp.openDictionaryModal()" aria-label="Open Scalable ISL Dictionary">
+        📖 Dictionary
+      </button>
+      <button id="btnHighContrast" class="btn-ctrl" aria-label="Toggle High Contrast Display">
+        👁️ Contrast
+      </button>
+      <button id="btnFontSize" class="btn-ctrl" aria-label="Adjust Font Scale">
+        A+ Text
+      </button>
+      <button id="btnVoiceToggle" class="btn-ctrl" aria-label="Toggle Audio Speech Output">
+        🔊 Audio ON
+      </button>
+      <button class="btn-ctrl" onclick="SignBridgeApp.openHistoryModal()" aria-label="View Service Records History">
+        📜 Records
+      </button>
+    </div>
+  </header>
+
+  <!-- Welcome Hero Banner with Exact Product Vision Branding -->
+  <section class="welcome-hero-banner" id="welcomeHeroBanner" aria-label="Welcome and Service Overview">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-tagline-badge">
+          <span>🇮🇳</span>
+          <span>National Accessibility Initiative</span>
+          <span class="badge-accent">Context-Aware AI</span>
+        </div>
+        <h2 class="hero-headline">Namaste! Welcome to SignBridge.</h2>
+        <p class="hero-subheadline">Accessible communication for everyday public services.</p>
+        <p class="hero-desc">
+          SignBridge empowers Deaf and hard-of-hearing citizens to navigate Indian public services—Railway counters, Hospitals, Police desks, Banks, and Citizen Kendras—using verified Indian Sign Language (ISL), tactile multi-gesture input, and two-way speech bridge.
+        </p>
+      </div>
+
+      <div class="hero-right">
+        <!-- Quick ISL Dictionary Search Card -->
+        <div class="hero-dict-card">
+          <div class="hero-dict-header">
+            <span class="hd-icon">📖</span>
+            <div>
+              <strong>Scalable ISL Dictionary</strong>
+              <div style="font-size:0.75rem; color:var(--text-muted);">ISLRTC Standard Lexicon (9 Categories)</div>
+            </div>
+          </div>
+          <div class="hero-search-group">
+            <input type="text" id="heroDictSearchInput" class="form-input" placeholder="Search signs: e.g. ticket, train, doctor..." onkeydown="if(event.key==='Enter')SignBridgeApp.searchFromHeroInput()">
+            <button class="btn-primary" onclick="SignBridgeApp.searchFromHeroInput()" aria-label="Search ISL Dictionary">
+              🔍
+            </button>
+          </div>
+          <div class="hero-quick-tags">
+            <span class="quick-tag" onclick="SignBridgeApp.quickSearchDict('ticket')">🎫 Ticket</span>
+            <span class="quick-tag" onclick="SignBridgeApp.quickSearchDict('platform')">🚉 Platform</span>
+            <span class="quick-tag" onclick="SignBridgeApp.quickSearchDict('namaste')">🙏 Namaste</span>
+            <span class="quick-tag" onclick="SignBridgeApp.quickSearchDict('doctor')">🏥 Doctor</span>
+            <span class="quick-tag" onclick="SignBridgeApp.quickSearchDict('money')">💵 Money</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- High-Stakes Public Notice Banner -->
+  <aside class="disclaimer-banner" id="disclaimerBanner" role="note" aria-label="Ethical and Safety Notice">
+    <div class="disclaimer-text">
+      <span>⚠️</span>
+      <span>
+        <strong>Public Utility Notice:</strong> Assistive communication bridge for public counters. 
+        <strong>Not a substitute</strong> for certified human sign language interpreters during critical medical diagnosis or sworn police/court depositions.
+      </span>
+    </div>
+    <div class="badges-row">
+      <span class="pill-badge pill-privacy">🔒 Zero Face Biometrics</span>
+      <span class="pill-badge pill-verified">✓ ISLRTC 30+ Standard Signs</span>
+    </div>
+  </aside>
+
+  <!-- Service Desks Navigation Ribbon -->
+  <nav class="services-ribbon" id="servicesRibbon" aria-label="Select Public Service Desk">
+    <!-- Populated dynamically via JS -->
+  </nav>
+
+  <!-- Workflow Stage Progress Stepper -->
+  <nav class="stepper-container" id="stepperContainer" aria-label="Workflow Stages">
+    <!-- Dynamically updated by SignBridgeApp.renderStepper -->
+  </nav>
+
+  <!-- Main Application Body Split Grid -->
+  <main class="main-content" role="main">
+    
+    <!-- LEFT PANE: Citizen Camera, ISL Detection & Categorized Tactile Palette -->
+    <section class="panel-card camera-card" aria-labelledby="headingCitizenPane">
+      <div class="card-header">
+        <h2 id="headingCitizenPane" class="card-title">
+          <span>🧏‍♂️</span>
+          <span>Citizen Interaction & ISL Camera</span>
+        </h2>
+        <span class="cam-indicator" id="camIndicator">CAMERA STANDBY</span>
+      </div>
+
+      <div class="card-body">
+        <!-- WebRTC Video Feed & Canvas Overlay -->
+        <div class="camera-wrapper">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <canvas id="cameraCanvas"></canvas>
+          <div class="camera-overlay">
+            <span style="background:rgba(0,0,0,0.65); padding:3px 8px; border-radius:6px; font-size:0.75rem; color:#fff; font-weight:700;">
+              Center hand inside box
+            </span>
+            <span style="background:rgba(0,0,0,0.65); padding:3px 8px; border-radius:6px; font-size:0.75rem; color:#38bdf8; font-weight:700;">
+              Live ISL Kinematics
+            </span>
+          </div>
+        </div>
+
+        <!-- Camera Controls -->
+        <div class="camera-controls-bar">
+          <button id="btnStartCam" class="btn-primary">
+            📷 Start Camera
+          </button>
+          <button id="btnToggleCam" class="btn-ctrl">
+            ⏸️ Pause / Resume
+          </button>
+          <button class="btn-ctrl" onclick="CameraController.switchCameraFacing()">
+            🔄 Flip Camera
+          </button>
+          <span id="cameraStatusText" style="font-size:0.8rem; color:var(--text-muted); align-self:center; margin-left:auto;">
+            Position hand in frame
+          </span>
+        </div>
+
+        <!-- Camera Fallback Banner (shown if denied or no webcam) -->
+        <div id="cameraFallbackBanner" style="display:none; margin-top:0.6rem; background:#450a0a; border:1px solid #ef4444; border-radius:8px; padding:0.75rem; font-size:0.85rem; color:#fecaca;">
+          <strong>Camera Unavailable:</strong> <span class="fallback-msg">Permission was denied or no webcam found.</span>
+          <div style="margin-top:4px;">No problem! All 30+ verified ISL signs are available on the 1-tap tactile tabs below.</div>
+        </div>
+
+        <!-- Real-time Recognition Feedback Gauge -->
+        <div class="recognition-gauge-card" aria-live="polite">
+          <div class="gauge-header">
+            <div>
+              <div style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Detected Sign Gesture</div>
+              <div id="detectedSignText" class="detected-sign-label">Awaiting Hand...</div>
+            </div>
+            <span id="confidenceVal" class="confidence-val conf-low">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="confidenceFill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <!-- Confirmation / Uncertainty Dialog Banner -->
+        <div id="confirmationBanner" class="confirmation-banner" role="alert">
+          <div style="font-weight:700; color:#fef3c7; font-size:0.9rem;">
+            ⚠️ Gesture Ambiguous (<span id="confScore">65%</span> confidence):
+          </div>
+          <div style="font-size:0.88rem; color:#fde68a; margin-top:2px;">
+            Did you mean: <strong id="confSignName" style="color:#fff;">TICKET</strong>?
+          </div>
+          <div class="conf-actions">
+            <button id="btnConfYes" class="btn-ctrl" style="background:#15803d; color:#fff; border-color:#22c55e;">
+              ✓ Yes, Confirm
+            </button>
+            <button id="btnConfRepeat" class="btn-ctrl" style="background:#78350f; color:#fff; border-color:#f59e0b;">
+              ↺ Repeat Sign
+            </button>
+            <button id="btnConfCancel" class="btn-ctrl">
+              ✕ Cancel
+            </button>
+          </div>
+        </div>
+
+        <!-- Categorized Tactile Sign Palette (30+ Signs) -->
+        <section class="tactile-section" aria-labelledby="tactilePaletteLabel">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <span id="tactilePaletteLabel" style="font-size:0.85rem; font-weight:800; text-transform:uppercase; color:var(--text-secondary);">
+              Tactile Sign Palette (1-Tap Direct)
+            </span>
+            <span style="font-size:0.75rem; color:var(--accent-primary); font-weight:700;">100% Reliable Fallback</span>
+          </div>
+
+          <!-- Tactile Category Navigation Tabs -->
+          <div class="tactile-tabs" role="tablist">
+            <button class="tactile-tab-btn active" data-cat="railway" onclick="SignBridgeApp.filterTactileCategory('railway', this)">
+              🚆 Railway & Travel
+            </button>
+            <button class="tactile-tab-btn" data-cat="basics" onclick="SignBridgeApp.filterTactileCategory('basics', this)">
+              💬 Common Basics
+            </button>
+            <button class="tactile-tab-btn" data-cat="health" onclick="SignBridgeApp.filterTactileCategory('health', this)">
+              🏥 Health & Needs
+            </button>
+            <button class="tactile-tab-btn" data-cat="numbers" onclick="SignBridgeApp.filterTactileCategory('numbers', this)">
+              🔢 Numbers & Money
+            </button>
+          </div>
+
+          <div class="chips-grid" id="tactileChipsGrid">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- RIGHT PANE: Guided Conversation, Officer Speech & Ticket Generator -->
+    <section class="panel-card officer-pane" aria-labelledby="headingServicePane">
+      <div class="card-header">
+        <h2 id="headingServicePane" class="card-title">
+          <span>🏛️</span>
+          <span id="currentServiceTitle">Indian Railways Passenger Reservation & Inquiry</span>
+        </h2>
+        <span style="font-size:0.8rem; color:var(--success); font-weight:700;">🟢 Active Counter</span>
+      </div>
+
+      <div class="card-body">
+        
+        <!-- Live Chat & Verified Sign Visual Transcript -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <span style="font-size:0.82rem; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">
+            Conversation History & Verified Signs
+          </span>
+          <span style="font-size:0.74rem; color:var(--accent-primary);" id="syncIndicator">
+            🟢 Synced in Real Time
+          </span>
+        </div>
+        <div class="chat-transcript" id="chatTranscript" role="log" aria-live="polite" aria-relevant="additions">
+          <!-- Populated dynamically by renderTranscript -->
+        </div>
+
+        <!-- Guided Interactive Service Form -->
+        <div class="guided-form-area" id="workflowFormArea" role="region" aria-label="Service Booking and Form Area">
+          <!-- Populated dynamically by renderWorkflowForm -->
+        </div>
+
+        <!-- Counter Officer Console: Mic, Quick Replies, Text Input -->
+        <section class="officer-console" aria-labelledby="officerConsoleLabel">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <span id="officerConsoleLabel" style="font-size:0.82rem; font-weight:700; text-transform:uppercase; color:var(--text-secondary);">
+              Counter Officer Desk Controls
+            </span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">Speech & Response</span>
+          </div>
+
+          <div class="speech-row">
+            <button id="btnMic" class="btn-mic" aria-label="Start Voice Dictation">
+              <span>🎙️</span>
+              <span>Speak (Mic)</span>
+            </button>
+            <input type="text" id="speechInput" class="form-input" style="flex:1;" 
+                   placeholder="Type officer reply or speak into microphone..."
+                   aria-label="Counter Officer Message Input">
+            <button id="btnSendOfficer" class="btn-primary" aria-label="Send Officer Reply">
+              Send →
+            </button>
+          </div>
+
+          <!-- Quick Official Pre-set Response Chips -->
+          <div class="quick-replies-list" role="group" aria-label="Quick Official Replies">
+            <button class="reply-pill" onclick="SignBridgeApp.sendOfficerMessage('Please show your Disability UDID Card or photo ID.')">
+              🪪 Show ID Card
+            </button>
+            <button class="reply-pill" onclick="SignBridgeApp.sendOfficerMessage('Please wait a moment while I verify your reservation.')">
+              ⏳ Please Wait
+            </button>
+            <button class="reply-pill" onclick="SignBridgeApp.sendOfficerMessage('Your train will arrive on Platform 3.')">
+              🚉 Platform 3
+            </button>
+            <button class="reply-pill" onclick="SignBridgeApp.sendOfficerMessage('Total fare is ₹455. You can pay via cash or UPI.')">
+              💵 Fare is ₹455
+            </button>
+            <button class="reply-pill" onclick="SignBridgeApp.sendOfficerMessage('Confirmed! Printing your official journey ticket slip now.')">
+              ✓ Confirmed
+            </button>
+            <button class="reply-pill" onclick="SignBridgeApp.sendOfficerMessage('Wheelchair assistance has been assigned to your coach door.')">
+              ♿ Wheelchair Assigned
+            </button>
+            <button class="reply-pill" onclick="SignBridgeApp.sendOfficerMessage('Lower berth priority allocated under Divyangjan quota.')">
+              💺 Lower Berth
+            </button>
+            <button class="reply-pill" onclick="SignBridgeApp.sendOfficerMessage('Please scan the counter QR code for UPI digital payment.')">
+              📱 UPI QR Pay
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Dual Device Pairing Modal -->
+  <div class="modal-overlay" id="roomModal" role="dialog" aria-modal="true" aria-labelledby="roomModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="roomModalTitle" style="font-size:1.15rem; font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+          <span>🔗</span>
+          <span>Dual-Device Pairing & Room Sync</span>
+        </h3>
+        <button class="close-btn" onclick="SignBridgeApp.closeModal('roomModal')" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+          Connect two devices (e.g. <strong>Citizen's Smartphone</strong> and <strong>Counter PC</strong>) to this live session. Both screens update in real time!
+        </p>
+
+        <!-- Current Room Code Card -->
+        <div style="background:var(--bg-surface); border:2px solid var(--accent-primary); border-radius:10px; padding:1rem; text-align:center;">
+          <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Your Room Code</div>
+          <div id="modalRoomCode" style="font-size:2rem; font-weight:900; letter-spacing:0.1em; color:var(--accent-primary); margin:0.3rem 0;">
+            SB-INIT
+          </div>
+          <button class="btn-primary" onclick="SignBridgeApp.copyRoomLink()" style="margin-top:0.4rem;">
+            📋 Copy Pairing Link
+          </button>
+        </div>
+
+        <!-- Join Existing Room Form -->
+        <div class="join-room-card">
+          <div style="font-weight:700; font-size:0.92rem; color:#bae6fd; margin-bottom:0.4rem;">
+            📲 Want to join another device's room?
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <input type="text" id="inputJoinRoomCode" class="form-input" style="flex:1; text-transform:uppercase; font-weight:700; font-family:monospace;" placeholder="e.g. SB-4A92" maxlength="10">
+            <button class="btn-success" onclick="SignBridgeApp.joinRoomByCode()">
+              🚀 Connect
+            </button>
+          </div>
+          <div id="joinRoomError" style="color:#f87171; font-size:0.8rem; margin-top:0.4rem; display:none;"></div>
+        </div>
+
+        <div style="margin-top:1rem; font-size:0.82rem; color:var(--text-muted); line-height:1.4;">
+          <strong>Tip:</strong> Open the link on the citizen's mobile device and select <em>"🧏‍♂️ Citizen View"</em>. On the counter officer computer, select <em>"👔 Officer View"</em>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History & Past Records Modal -->
+  <div class="modal-overlay" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="historyModalTitle" style="font-size:1.15rem; font-weight:800;">📜 Service Records & History (SQLite DB)</h3>
+        <button class="close-btn" onclick="SignBridgeApp.closeModal('historyModal')" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Ref / PNR</th>
+              <th>Service</th>
+              <th>Record Title</th>
+              <th>Issued Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <!-- Populated dynamically via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scalable ISL Dictionary Modal -->
+  <div class="modal-overlay" id="dictionaryModal" role="dialog" aria-modal="true" aria-labelledby="dictModalTitle">
+    <div class="modal-window modal-wide">
+      <div class="modal-header">
+        <h3 id="dictModalTitle" style="font-size:1.2rem; font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+          <span>📖</span>
+          <span>Scalable Indian Sign Language (ISL) Dictionary</span>
+        </h3>
+        <button class="close-btn" onclick="SignBridgeApp.closeModal('dictionaryModal')" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="dict-attribution-note">
+          Official references based on <strong>Indian Sign Language Research and Training Centre (ISLRTC)</strong> standards. Every entry contains verified sign gloss, English meaning, category, and visual representation.
+        </div>
+        <div class="dict-search-bar-row">
+          <input type="text" id="dictSearchInput" class="form-input" placeholder="Search by English meaning, Hindi word, or ISL gloss (e.g. ticket, train, namaste)..." oninput="SignBridgeApp.handleDictionarySearch()">
+          <select id="dictCategorySelect" class="form-input" style="max-width:240px;" onchange="SignBridgeApp.handleDictionarySearch()">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+        <div class="dict-results-meta" id="dictResultsMeta">Showing verified ISL dictionary entries...</div>
+        <div class="dict-cards-grid" id="dictCardsGrid">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Official Demo Railway Ticket Slip Modal -->
+  <div class="modal-overlay" id="ticketModal" role="dialog" aria-modal="true" aria-labelledby="ticketModalTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="ticketModalTitle" style="font-size:1.15rem; font-weight:800; display:flex; align-items:center; gap:0.5rem;">
+          <span>🎫</span>
+          <span>Indian Railways — Demo Journey Ticket Slip</span>
+        </h3>
+        <button class="close-btn" onclick="SignBridgeApp.closeModal('ticketModal')" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body" id="ticketModalBody">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/isl_viewer.js"></script>
+  <script src="/static/js/railway_state_machine.js"></script>
+  <script src="/static/js/camera.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
